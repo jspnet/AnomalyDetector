@@ -1,9 +1,9 @@
-from distutils.core import setup
+from setuptools import find_packages, setup
 
 setup(
     name='anomalydetector',
     version='https://github.com/jspnet/AnomalyDetector',
-    packages=['anomalydetector'],
+    packages=find_packages(),
     url='',
     install_requires=[
         'tensorflow',
