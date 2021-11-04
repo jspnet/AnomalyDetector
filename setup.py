@@ -2,9 +2,11 @@ from setuptools import find_packages, setup
 
 setup(
     name='anomalydetector',
-    version='https://github.com/jspnet/AnomalyDetector',
+    version='0.0.1',
     packages=find_packages(),
-    url='',
+    include_package_data=True,
+    zip_safe=False,
+    url='https://github.com/jspnet/AnomalyDetector',
     install_requires=[
         'tensorflow',
         'numpy',
