@@ -2,9 +2,8 @@ import argparse
 import os
 import glob
 import numpy as np
-from keras.models import Model
-from keras.layers import Input, Dense, BatchNormalization, Activation
 from tqdm import tqdm
+from anomalydetector.model import AdModel
 
 
 class Trainer:
@@ -18,60 +17,8 @@ class Trainer:
         self._frame_num = frame_num
         self._epoch = epoch
 
-    @staticmethod
-    def get_model(input_dim):
-        """
-        from DCASE2020_task2_baseline's model
-        Copyright (c) 2020 Hitachi, Ltd.
-        (MIT License)
-        ref:
-        https://github.com/y-kawagu/dcase2020_task2_baseline/
-
-        define the keras model
-        the model based on the simple dense auto encoder
-        (128*128*128*128*8*128*128*128*128)
-        """
-        inputLayer = Input(shape=(input_dim,))
-
-        h = Dense(128)(inputLayer)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(128)(h)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(128)(h)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(128)(h)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(8)(h)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(128)(h)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(128)(h)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(128)(h)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(128)(h)
-        h = BatchNormalization()(h)
-        h = Activation('relu')(h)
-
-        h = Dense(input_dim)(h)
-
-        return Model(inputs=inputLayer, outputs=h)
+        if not os.path.isdir(checkpoint):
+            os.makedirs(checkpoint)
 
     def get_data_set(self, train_cnt_rate=0.9):
         train_dataset = glob.glob(os.path.abspath(self._feat_path))
@@ -91,48 +38,41 @@ class Trainer:
         return all_feat_ary
 
     def __call__(self):
-        # model
-        model = self.get_model(self._input_dim)
-        model.summary()
-
         # dataset
         train_dataset = self.get_data_set(self._feat_path)
 
-        # output
-        checkpoint_dir = self._checkpoint
-
+        model = AdModel.get_model(self._input_dim)
         model.compile(optimizer='adam', loss='mse')
+        model.summary()
 
         # train
         for epoch in range(self._epoch):
-            print(f"Epoch: {epoch}")
-            history = model.fit(
+            print(f"Epoch: {epoch + 1}")
+            _ = model.fit(
                 train_dataset, train_dataset, batch_size=self._batch_size,
                 verbose=1
             )
-            #model.save_weights(f"{checkpoint_dir}/{epoch:05d}.ckpt")
-            #model.param.save(f"{checkpoint_dir}/config.txt")
-            #model.save(f"{checkpoint_dir}/model")
+
+        model.save_weights(f"{self._checkpoint}/{self._epoch:05d}.ckpt")
+        model.save(f"{self._checkpoint}/model")
 
 
 def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument("checkpoint", default=None, help="モデルの保存先ディレクトリ")
-    parser.add_argument("feat_path", help="データセットに使うファイルがあるディレクトリ")
+    parser.add_argument("--checkpoint", default="./out/ckpt/", help="モデルの保存先ディレクトリ")
+    parser.add_argument("--feat_path", default="./in/feature/", help="データセットに使うファイルがあるディレクトリ")
 
     parser.add_argument("--sr", default=16000, help="サンプリングレート")
     parser.add_argument("--n_mels", default=64, help="入力データの次元数")
     parser.add_argument("--frame_num", default=5, help="前後に連結するフレーム数")
     parser.add_argument("--batch_size", default=100, help="バッチサイズ")
 
-    parser.add_argument("--epoch", default=100, help="エポック数")
+    parser.add_argument("--epoch", default=50, help="エポック数")
     parser.add_argument("--id", default="0", help="使用するgpuのid　※nvidia-smiコマンドで見れるGPU番号に対応")
 
     args = parser.parse_args()
     trainer = Trainer(args.checkpoint, args.feat_path, args.sr, args.n_mels, args.frame_num, args.batch_size, args.epoch)
     trainer()
-
-
 
 
 if __name__ == '__main__':

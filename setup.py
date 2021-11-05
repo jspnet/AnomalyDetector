@@ -16,6 +16,14 @@ setup(
         'matplotlib',
         'soundfile'
     ],
+    entry_points={
+        "console_scripts": [
+            "adpreproc = anomalydetector.preprocessor:main",
+            "admixer = anomalydetector.mixer:main",
+            "adtrainer = anomalydetector.trainer:main",
+            "adevaluator = anomalydetector.evaluator:main",
+        ]
+    },
     license='GPLv3',
     author='JSP co.',
     author_email='masahiko.hashimoto@jspnet.co.jp',

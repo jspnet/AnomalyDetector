@@ -50,9 +50,9 @@ class Mixer:
 
 def main():
     arg_parser = argparse.ArgumentParser(description='AnomalyMixer')
-    arg_parser.add_argument('-i', '--input_file', type=str, required=True)
-    arg_parser.add_argument('-a', '--anm_dir', type=str, default="./anm/")
-    arg_parser.add_argument('-o', '--out_dir', type=str, default="./out/")
+    arg_parser.add_argument('input_file', type=str)
+    arg_parser.add_argument('-a', '--anm_dir', type=str, default="./in/anm/")
+    arg_parser.add_argument('-o', '--out_dir', type=str, default="./in/sample/")
     arg_parser.add_argument('-r', '--sample_rate', type=int, default=48000)
     arg_parser.parse_args()
     args = arg_parser.parse_args()
