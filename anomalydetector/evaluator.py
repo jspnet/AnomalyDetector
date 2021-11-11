@@ -11,7 +11,7 @@ from anomalydetector.model import AdModel
 
 
 class Evaluator:
-    def __init__(self, checkpoint, audio_file_path, output_path, sr, frame_num, n_mels, n_fft, hop_length, power=2.0):
+    def __init__(self, checkpoint, audio_file_path, output_path, sr=48000, frame_num=5, n_mels=64, n_fft=1024, hop_length=512, power=2.0):
         self._checkpoint = checkpoint
         self._audio_file_path = audio_file_path
         self._output_path = output_path
@@ -89,7 +89,7 @@ def main():
     parser.add_argument("--checkpoint", default="./out/ckpt/", help="モデルの保存先ディレクトリ")
     parser.add_argument("--audio_file_path", default="./in/sample/", help="異常検知対象ファイル")
     parser.add_argument("--output_path", default="./out/result/", help="異常検知対象ファイル")
-    parser.add_argument("--sr", default=16000, help="サンプリングレート")
+    parser.add_argument("--sr", default=48000, help="サンプリングレート")
 
     # モデルパラメータ
     parser.add_argument("--n_mels", default=64, help="入力データの次元数")

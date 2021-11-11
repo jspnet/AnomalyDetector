@@ -7,12 +7,11 @@ from anomalydetector.model import AdModel
 
 
 class Trainer:
-    def __init__(self, checkpoint, feat_path, sr=16000, n_mels=64, frame_num=5, batch_size=100, epoch=10):
+    def __init__(self, checkpoint, feat_path, n_mels=64, frame_num=5, batch_size=100, epoch=20):
         self._checkpoint = checkpoint
         self._feat_path = os.path.abspath(feat_path + "/*.csv")
         self._detect_frame_num = ((frame_num * 2) + 1)
         self._input_dim = n_mels * self._detect_frame_num
-        self._sr = sr
         self._batch_size = batch_size
         self._frame_num = frame_num
         self._epoch = epoch
@@ -43,7 +42,6 @@ class Trainer:
 
         model = AdModel.get_model(self._input_dim)
         model.compile(optimizer='adam', loss='mse')
-        model.summary()
 
         # train
         for epoch in range(self._epoch):
@@ -62,16 +60,15 @@ def main():
     parser.add_argument("--checkpoint", default="./out/ckpt/", help="モデルの保存先ディレクトリ")
     parser.add_argument("--feat_path", default="./in/feature/", help="データセットに使うファイルがあるディレクトリ")
 
-    parser.add_argument("--sr", default=16000, help="サンプリングレート")
     parser.add_argument("--n_mels", default=64, help="入力データの次元数")
     parser.add_argument("--frame_num", default=5, help="前後に連結するフレーム数")
     parser.add_argument("--batch_size", default=100, help="バッチサイズ")
 
-    parser.add_argument("--epoch", default=50, help="エポック数")
+    parser.add_argument("--epoch", default=20, help="エポック数")
     parser.add_argument("--id", default="0", help="使用するgpuのid　※nvidia-smiコマンドで見れるGPU番号に対応")
 
     args = parser.parse_args()
-    trainer = Trainer(args.checkpoint, args.feat_path, args.sr, args.n_mels, args.frame_num, args.batch_size, args.epoch)
+    trainer = Trainer(args.checkpoint, args.feat_path, args.n_mels, args.frame_num, args.batch_size, args.epoch)
     trainer()
 
 
