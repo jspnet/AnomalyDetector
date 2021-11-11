@@ -7,7 +7,7 @@ import soundfile as sf
 
 
 class Mixer:
-    def __init__(self, input_file, anm="./in/anm/", out="./in/sample/", sr=48000, subtype="PCM_16", out_sec=10, start_point=60):
+    def __init__(self, input_file, anm="./in/anm/", out="./in/sample/", sr=16000, subtype="PCM_16", out_sec=10, start_point=60):
         self._in_file = input_file
         self._anm_dir = anm
         self._out_dir = out
@@ -54,7 +54,7 @@ def main():
     arg_parser.add_argument('input_file', type=str)
     arg_parser.add_argument('-a', '--anm_dir', type=str, default="./in/anm/")
     arg_parser.add_argument('-o', '--out_dir', type=str, default="./in/sample/")
-    arg_parser.add_argument('-r', '--sample_rate', type=int, default=48000)
+    arg_parser.add_argument('-r', '--sample_rate', type=int, default=16000)
     arg_parser.parse_args()
     args = arg_parser.parse_args()
 

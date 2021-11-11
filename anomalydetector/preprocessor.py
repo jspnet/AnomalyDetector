@@ -9,7 +9,7 @@ import sys
 
 
 class Preprocessor:
-    def __init__(self, audio_dir, feat_dir, sr=48000, n_fft=1024, hop_length=512, n_mels=64, power=2.0):
+    def __init__(self, audio_dir, feat_dir, sr=16000, n_fft=1024, hop_length=512, n_mels=64, power=2.0):
         self._audio_path = os.path.abspath(audio_dir + "/*.wav")
         self._feat_dir = os.path.abspath(feat_dir)
         self._sr = sr
@@ -54,7 +54,7 @@ def main():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("-i", "--audio_dir", default="./in/")
     parser.add_argument("-o", "--feat_dir", default="./in/feature/")
-    parser.add_argument("-r", "--sampling_rate", default=48000)
+    parser.add_argument("-r", "--sampling_rate", default=16000)
     parser.add_argument("-f", "--n_fft", default=1024)
     parser.add_argument("-p", "--hop_length", default=512)
     parser.add_argument("-m", "--n_mels", default=64)
