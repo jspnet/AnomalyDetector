@@ -7,7 +7,7 @@ import soundfile as sf
 
 
 class Mixer:
-    def __init__(self, input_file, anm="./in/anm/", out="./in/sample", sr=48000, subtype="PCM_16", out_sec=10, start_point=60):
+    def __init__(self, input_file, anm="./in/anm/", out="./in/sample/", sr=48000, subtype="PCM_16", out_sec=10, start_point=60):
         self._in_file = input_file
         self._anm_dir = anm
         self._out_dir = out
