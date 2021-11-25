@@ -6,6 +6,7 @@ import sys
 import glob
 import os
 import csv
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 from anomalydetector.model import AdModel
 
@@ -82,6 +83,38 @@ class Evaluator:
         mel = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=self._n_mels,
                                              n_fft=self._n_fft, hop_length=self._hop_length)
         return 20.0 / self._power * np.log10(mel + sys.float_info.epsilon)
+
+    @staticmethod
+    def get_result_score(audio_file_path, score_file_path, anm_threshold=20, anm_time=None):
+        if anm_time is None:
+            anm_time = [10, 11]
+        # anm_threshold:  異常判定の閾値
+        # anm_time:  異常が発生した秒数
+
+        # wavファイルのロード
+        x, a = librosa.load(audio_file_path)
+
+        # スコア読み込み
+        with open(score_file_path) as f:
+            reader = csv.reader(f)
+            d = [row for row in csv.reader(f)]
+
+        # 異常判定 正常=0 異常=1
+        score = np.array([i[0] for i in d], dtype="float64")
+        judgement_score = np.zeros(len(score))
+        judgement_score[score >= anm_threshold] = 1
+
+        # 異常判定等結果のplot
+        fig = plt.figure()
+        score_fig = fig.add_subplot(211)
+        score_fig.plot(score)
+        score_fig.hlines(anm_threshold, 0, len(score), "red")
+        for ii in np.where(judgement_score == 1):
+            score_fig.vlines(ii, 0, 300, "red", linewidth=5, alpha=0.1)
+        audio_fig = fig.add_subplot(212)
+        audio_fig.set_ylim(-1.0,1.0)
+        audio_fig.plot(x)
+        plt.show()
 
 
 def main():

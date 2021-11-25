@@ -14,7 +14,8 @@ setup(
         'tqdm',
         'pandas',
         'matplotlib',
-        'soundfile'
+        'soundfile',
+        'scipy'
     ],
     entry_points={
         "console_scripts": [

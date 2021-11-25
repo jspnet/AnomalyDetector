@@ -6,6 +6,8 @@ import librosa.display
 import glob
 import os
 import sys
+import scipy.signal as sp
+import soundfile as sf
 
 
 class Preprocessor:
@@ -48,6 +50,21 @@ class Preprocessor:
         mel = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=self._n_mels,
                                              n_fft=self._n_fft, hop_length=self._hop_length)
         return 20.0 / self._power * np.log10(mel + sys.float_info.epsilon)
+
+    def _hpf(self, audio_file, cutoff=1000, tap=125):
+        # cutoff :  カットオフ周波数(Hz)
+        # tap :  タップ数（本講義では固定でも良い※時間があればいじっても良い！）
+
+        # wavファイルのロード
+        x, _ = librosa.load(audio_file, sr=self._sr)
+        # フィルタ係数を算出する
+        cutoff = cutoff / (self._sr/2)
+        coef_hpf = sp.firwin(tap, cutoff, pass_zero=False)
+
+        # 音データにフィルタをかける
+        x_t = sp.lfilter(coef_hpf, 1, x)
+        # フィルタ処理後の音データを保存
+        sf.write("sample_hpf.wav", x_t, self._sr, subtype="PCM_16")
 
 
 def main():
