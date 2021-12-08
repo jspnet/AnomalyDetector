@@ -44,7 +44,7 @@ class Evaluator:
         for audio_file in glob.glob(self._audio_file_path + "/*.wav"):
             self._evaluate(model, audio_file)
 
-    def _evaluate(self, model, file_path):
+    def _evaluate(self, model, file_path, plot=True, anm_threshold=20):
         _, file_name = os.path.split(file_path)
         base, _ = os.path.splitext(file_name)
         output_csv = self._output_path + "/" + base + ".csv"
@@ -74,6 +74,9 @@ class Evaluator:
                 writer.writerow([mse[0]])
 
         print("output: " + output_csv)
+        if plot:
+            self.get_result_score(file_path, output_csv, anm_threshold)
+
         return detection_result
 
     def _get_melspectrogram(self, audio_file_path):
@@ -84,19 +87,11 @@ class Evaluator:
                                              n_fft=self._n_fft, hop_length=self._hop_length)
         return 20.0 / self._power * np.log10(mel + sys.float_info.epsilon)
 
-    @staticmethod
-    def get_result_score(audio_file_path, score_file_path, anm_threshold=20, anm_time=None):
-        if anm_time is None:
-            anm_time = [10, 11]
-        # anm_threshold:  異常判定の閾値
-        # anm_time:  異常が発生した秒数
-
-        # wavファイルのロード
-        x, a = librosa.load(audio_file_path)
+    def get_result_score(self, audio_file_path, score_file_path, anm_threshold=20):
+        x, a = librosa.load(audio_file_path, sr=self._sr)
 
         # スコア読み込み
         with open(score_file_path) as f:
-            reader = csv.reader(f)
             d = [row for row in csv.reader(f)]
 
         # 異常判定 正常=0 異常=1
@@ -112,7 +107,7 @@ class Evaluator:
         for ii in np.where(judgement_score == 1):
             score_fig.vlines(ii, 0, 300, "red", linewidth=5, alpha=0.1)
         audio_fig = fig.add_subplot(212)
-        audio_fig.set_ylim(-1.0,1.0)
+        audio_fig.set_ylim(-1.0, 1.0)
         audio_fig.plot(x)
         plt.show()
 
