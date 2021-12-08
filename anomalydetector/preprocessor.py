@@ -6,7 +6,7 @@ import librosa.display
 import glob
 import os
 import sys
-from anomalydetector.filter import Filter
+from anomalydetector.hpfilter import HpFilter
 
 
 class Preprocessor:
@@ -23,7 +23,7 @@ class Preprocessor:
         self._cutoff = cutoff
         self._filter = None
         if cutoff is not None:
-            self._filter = Filter(cutoff, sr=sr)
+            self._filter = HpFilter(cutoff, sr=sr)
 
         if not os.path.isdir(self._feat_dir):
             os.makedirs(self._feat_dir)
