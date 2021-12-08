@@ -20,7 +20,6 @@ class Preprocessor:
         self._hop_length = hop_length
         self._n_mels = n_mels
         self._power = power
-        self._cutoff = cutoff
         self._filter = None
         if cutoff is not None:
             self._filter = HpFilter(cutoff, sr=sr)
