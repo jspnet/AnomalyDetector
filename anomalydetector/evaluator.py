@@ -23,6 +23,7 @@ class Evaluator:
         self._hop_length = hop_length
         self._n_mels = n_mels
         self._anm_threshold = anm_threshold
+        self._filter = None
         if cutoff is not None:
             self._filter = HpFilter(cutoff, sr=sr)
         self._power = power
