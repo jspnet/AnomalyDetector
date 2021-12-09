@@ -9,10 +9,12 @@ import csv
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from anomalydetector.model import AdModel
+from anomalydetector.hpfilter import HpFilter
 
 
 class Evaluator:
-    def __init__(self, checkpoint, audio_file_path, output_path, sr=16000, frame_num=5, n_mels=64, n_fft=1024, hop_length=512, power=2.0):
+    def __init__(self, checkpoint, audio_file_path, output_path, sr=16000, frame_num=5,
+                 n_mels=64, n_fft=1024, hop_length=512, anm_threshold=20, cutoff=None, power=2.0):
         self._checkpoint = checkpoint
         self._audio_file_path = audio_file_path
         self._output_path = output_path
@@ -20,6 +22,9 @@ class Evaluator:
         self._n_fft = n_fft
         self._hop_length = hop_length
         self._n_mels = n_mels
+        self._anm_threshold = anm_threshold
+        if cutoff is not None:
+            self._filter = HpFilter(cutoff, sr=sr)
         self._power = power
         self._frame_num = frame_num
         self._input_dim = ((self._frame_num * 2) + 1) * self._n_mels
@@ -44,7 +49,7 @@ class Evaluator:
         for audio_file in glob.glob(self._audio_file_path + "/*.wav"):
             self._evaluate(model, audio_file)
 
-    def _evaluate(self, model, file_path, plot=True, anm_threshold=20):
+    def _evaluate(self, model, file_path, plot=True):
         _, file_name = os.path.split(file_path)
         base, _ = os.path.splitext(file_name)
         output_csv = self._output_path + "/" + base + ".csv"
@@ -75,19 +80,23 @@ class Evaluator:
 
         print("output: " + output_csv)
         if plot:
-            self.get_result_score(file_path, output_csv, anm_threshold)
+            self.get_result_score(file_path, output_csv)
 
         return detection_result
 
     def _get_melspectrogram(self, audio_file_path):
-        y, sr = librosa.load(audio_file_path, sr=self._sr)
+        if self._filter is None:
+            y, sr = librosa.load(audio_file_path, sr=self._sr)
+        else:
+            y, sr = self._filter.hpf(audio_file_path)
+
         # fftの幅で割り切れない半端を捨てる
         y = y[:int((len(y) - len(y) % self._n_fft))]
         mel = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=self._n_mels,
                                              n_fft=self._n_fft, hop_length=self._hop_length)
         return 20.0 / self._power * np.log10(mel + sys.float_info.epsilon)
 
-    def get_result_score(self, audio_file_path, score_file_path, anm_threshold=20):
+    def get_result_score(self, audio_file_path, score_file_path):
         x, a = librosa.load(audio_file_path, sr=self._sr)
 
         # スコア読み込み
@@ -97,13 +106,13 @@ class Evaluator:
         # 異常判定 正常=0 異常=1
         score = np.array([i[0] for i in d], dtype="float64")
         judgement_score = np.zeros(len(score))
-        judgement_score[score >= anm_threshold] = 1
+        judgement_score[score >= self._anm_threshold] = 1
 
         # 異常判定等結果のplot
         fig = plt.figure()
         score_fig = fig.add_subplot(211)
         score_fig.plot(score)
-        score_fig.hlines(anm_threshold, 0, len(score), "red")
+        score_fig.hlines(self._anm_threshold, 0, len(score), "red")
         for ii in np.where(judgement_score == 1):
             score_fig.vlines(ii, 0, 300, "red", linewidth=5, alpha=0.1)
         audio_fig = fig.add_subplot(212)
